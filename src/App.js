@@ -1,10 +1,23 @@
+import React, { useState } from 'react';
+import Header from './components/Header.js'
+// import Body from './components/Body.js';
 import './App.css';
 
+export const ThemeContext = React.createContext();
+
 function App() {
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  
+  function setTheme() {
+    setIsDarkTheme((prevTheme) => !prevTheme);
+  }
   return (
-    <div className="App">
-      <h1>App</h1>
-    </div>
+    <ThemeContext.Provider value={isDarkTheme}>
+      <div className="App">
+        <Header setTheme={setTheme}/>
+        {/* <Body/> */}
+      </div>
+    </ThemeContext.Provider>
   );
 }
 

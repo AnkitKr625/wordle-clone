@@ -1,0 +1,25 @@
+.map-pa {
+  margin: 4px;
+  padding: 4px;
+}
+.header {
+  height: 64px;
+  border-bottom: solid #000 0.5px;
+}
+
+.dark-header {
+  height: 64px;
+  border-bottom: solid #aaa 0.5px;
+  background-color: #000;
+  color: #fff;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
