@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 import WordInput from './WordInput';
 
 function Body() {
@@ -51,7 +51,7 @@ function Body() {
     })
   }
 
-  function handleKeyDown(e) {
+  const handleKeyDown = useCallback((e) => {
     let keyCode = e.keyCode;
     if(keyCode === 8) {
       setWord(prevWord => prevWord.substring(0, prevWord.length -1));
@@ -60,7 +60,7 @@ function Body() {
     } else if(keyCode === 13) {
       handleEnterKey();
     }
-  }
+  },[])
 
   useEffect(() => {
     currWord.current = word;
