@@ -7,22 +7,22 @@ function Body() {
   const[word, setWord] = useState('');
   const currWord = useRef('');
   const currWordArr = useRef('');
-  const [foundWordArr, setFoundWordArr] = useState([]); 
+  // const [foundWordArr, setFoundWordArr] = useState([]);
   
-  function handleInput(word) {
-    const newWord = word.trim().substring(0,5).toUpperCase();
-    setWord(newWord);
-  }
+  // function handleInput(word) {
+  //   const newWord = word.trim().substring(0,5).toUpperCase();
+  //   setWord(newWord);
+  // }
 
-  function keyboardInput(e) {
-    let c = e.charCode;
-    if(c === 13) {
-      e.preventDefault();
-      handleEnterKey();
-    } else if((c > 64 && c < 91) || (c > 96 && c < 123)) {
-      handleKeyPress(e.key.toUpperCase());
-    }
-  }
+  // function keyboardInput(e) {
+  //   let c = e.charCode;
+  //   if(c === 13) {
+  //     e.preventDefault();
+  //     handleEnterKey();
+  //   } else if((c > 64 && c < 91) || (c > 96 && c < 123)) {
+  //     handleKeyPress(e.key.toUpperCase());
+  //   }
+  // }
 
   function handleEnterKey() {
     let cw = currWord.current;
@@ -83,7 +83,7 @@ function Body() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  },[]);
+  },[handleKeyDown]);
 
   return (
     <>
