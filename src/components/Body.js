@@ -1,32 +1,55 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
 import WordInput from './WordInput';
 
+const COLORS = {
+  CORRECT: '#008000d6',
+  PARTIAL_CORRECT: '#dace01',
+  WRONG: '#ff0000d6',
+  DEFAULT: '#8f9396bf'
+}
+
+const KEYS =[
+  { key: 'Q', bgColor: COLORS.DEFAULT },
+  { key: 'W', bgColor: COLORS.DEFAULT },
+  { key: 'E', bgColor: COLORS.DEFAULT },
+  { key: 'R', bgColor: COLORS.DEFAULT },
+  { key: 'T', bgColor: COLORS.DEFAULT },
+  { key: 'Y', bgColor: COLORS.DEFAULT },
+  { key: 'U', bgColor: COLORS.DEFAULT },
+  { key: 'I', bgColor: COLORS.DEFAULT },
+  { key: 'O', bgColor: COLORS.DEFAULT },
+  { key: 'P', bgColor: COLORS.DEFAULT },
+  { key: 'A', bgColor: COLORS.DEFAULT },
+  { key: 'S', bgColor: COLORS.DEFAULT },
+  { key: 'D', bgColor: COLORS.DEFAULT },
+  { key: 'F', bgColor: COLORS.DEFAULT },
+  { key: 'G', bgColor: COLORS.DEFAULT },
+  { key: 'H', bgColor: COLORS.DEFAULT },
+  { key: 'J', bgColor: COLORS.DEFAULT },
+  { key: 'K', bgColor: COLORS.DEFAULT },
+  { key: 'L', bgColor: COLORS.DEFAULT },
+  { key: 'Z', bgColor: COLORS.DEFAULT },
+  { key: 'X', bgColor: COLORS.DEFAULT },
+  { key: 'C', bgColor: COLORS.DEFAULT },
+  { key: 'V', bgColor: COLORS.DEFAULT },
+  { key: 'B', bgColor: COLORS.DEFAULT },
+  { key: 'N', bgColor: COLORS.DEFAULT },
+  { key: 'M', bgColor: COLORS.DEFAULT },
+]
+
 function Body() {
   const wordOftheDay = 'APPLE';
   const[wordArray, setWordArray] = useState([]);
   const[word, setWord] = useState('');
-  const currWord = useRef('');
-  const currWordArr = useRef('');
-  // const [foundWordArr, setFoundWordArr] = useState([]);
-  
-  // function handleInput(word) {
-  //   const newWord = word.trim().substring(0,5).toUpperCase();
-  //   setWord(newWord);
-  // }
-
-  // function keyboardInput(e) {
-  //   let c = e.charCode;
-  //   if(c === 13) {
-  //     e.preventDefault();
-  //     handleEnterKey();
-  //   } else if((c > 64 && c < 91) || (c > 96 && c < 123)) {
-  //     handleKeyPress(e.key.toUpperCase());
-  //   }
-  // }
+  const wordRef = useRef('');
+  const wordArrayRef = useRef('');
+  const [foundWordArr, setFoundWordArr] = useState([]);
+  const [keys, setKeys] = useState(KEYS);
+  const [found, setFound] = useState(false);
 
   function handleEnterKey() {
-    let cw = currWord.current;
-    let cwa = currWordArr.current;
+    let cw = wordRef.current;
+    let cwa = wordArrayRef.current;
     if(cw.length === 5) {
       if(cwa.length < 6) {
         setWordArray([...cwa, cw]);
@@ -41,15 +64,17 @@ function Body() {
     })
   }
 
-  function handleKeyPress(key) {
-    setWord((prevWord) => {
-      if(prevWord.length >= 5) {
-        return prevWord;
-      } else {
-        return prevWord + key.toUpperCase();
-      }
-    })
-  }
+  const handleKeyPress = useCallback((key) => {
+    if(!found) {
+      setWord((prevWord) => {
+        if(prevWord.length >= 5) {
+          return prevWord;
+        } else {
+          return prevWord + key.toUpperCase();
+        }
+      })
+    }
+  },[found])
 
   const handleKeyDown = useCallback((e) => {
     let keyCode = e.keyCode;
@@ -60,20 +85,55 @@ function Body() {
     } else if(keyCode === 13) {
       handleEnterKey();
     }
-  },[])
+  },[handleKeyPress])
 
   useEffect(() => {
-    currWord.current = word;
+    wordRef.current = word;
   },[word]);
 
   useEffect(() => {
-    currWordArr.current = [...wordArray];
+    wordArrayRef.current = [...wordArray];
     let newWord = wordArray[wordArray.length - 1];
-    let fndArr = [false, false, false, false, false];
-    for(let i=0;i<5;++i){
-      if(wordOftheDay.charAt(i) === newWord?.charAt(i)) {
-        fndArr[i] = true;
+    if(newWord) {
+      let fndArr = [false, false, false, false, false];
+      let newFndArr = [false, false, false, false, false];
+      for(let i=0;i<5;++i){
+        if(wordOftheDay.charAt(i) === newWord.charAt(i)) {
+          fndArr[i] = true;
+          newFndArr[i] = true;
+        }
       }
+      if(fndArr.every((e) => e === true)) {
+        setFound(true);
+      }
+      let colorArr = new Array(5);
+      colorArr.fill(COLORS.WRONG);
+      for(const i in wordOftheDay) {
+        if(!fndArr[i]) {
+          for(const j in newWord) {
+            if(!newFndArr[j] && wordOftheDay.charAt(i) === newWord.charAt(j)) {
+              colorArr[j] = COLORS.PARTIAL_CORRECT;
+              newFndArr[j] = true;
+              break;
+            }
+          }
+        } else {
+          colorArr[i] = COLORS.CORRECT;
+        }
+      }
+      setKeys(prevKey => {
+        let newKeyArr = [...prevKey];
+        for(const i in newWord) {
+          const key = newKeyArr.find((e) => e.key === newWord.charAt(i));
+          if(key.bgColor !== COLORS.CORRECT) {
+            key.bgColor = colorArr[i];
+          }
+        }
+        return newKeyArr;
+      })
+      setFoundWordArr((prevArr) => {
+        return [...prevArr, colorArr];
+      })
     }
   },[wordArray])
   
@@ -81,43 +141,55 @@ function Body() {
     window.addEventListener('keydown', handleKeyDown);
     
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown);
     }
   },[handleKeyDown]);
+  
+  useEffect(() => {
+    if(found) {
+      window.removeEventListener('keydown', handleKeyDown);
+    }
+  },[found,handleKeyDown]);
+
+
 
   return (
-    <>
+    <div className='body'>
     <div className='flex-column-center'>
       { [1,2,3,4,5,6].map((e,i) => {
         return (
-          <WordInput word={wordArray.length + 1 >= e ? wordArray[i] || word : ''} key={e}/>
+          <WordInput word={wordArray.length + 1 >= e ? wordArray[i] || word : ''} key={e} bgColor={foundWordArr[i]}/>
         )
       })}
     </div>
-    <div className='flex-center'>
-      {['q','w','e','r','t','y','u','i','o','p'].map((l) => {
-        return (
-          <div className='flex-center key cursor-pointer' onClick={() => handleKeyPress(l)} key={l}>{l}</div>
-        )
-      })}
-    </div>
-    <div className='flex-center'>
-      {['a','s','d','f','g','h','j','k','l'].map((l) => {
-        return (
-          <div className='flex-center key cursor-pointer' onClick={() => handleKeyPress(l)} key={l}>{l}</div>
+    <div>
+      <div className='flex-center'>
+        {keys.slice(0,10).map(({key, bgColor}) => {
+          return (
+            <div className='flex-center key cursor-pointer' style={{backgroundColor: bgColor}} onClick={() => handleKeyPress(key)} key={key}>{key}</div>
           )
         })}
-    </div>
-    <div className='flex-center'>
-      <div className="flex-center key cursor-pointer" onClick={() => handleEnterKey()}>{'ENTER'}</div>
-      {['z','x','c','v','b','n','m'].map((l) => {
-        return (
-          <div className='flex-center key cursor-pointer' onClick={() => handleKeyPress(l)} key={l}>{l}</div>
+      </div>
+      <div className='flex-center'>
+        {keys.slice(10,19).map(({key, bgColor}) => {
+          return (
+            <div className='flex-center key cursor-pointer' style={{backgroundColor: bgColor}} onClick={() => handleKeyPress(key)} key={key}>{key}</div>
           )
         })}
-      <div className="flex-center key cursor-pointer" onClick={() => handleBackspaceKey()}>{'BACKSPACE'}</div>
+      </div>
+      <div className='flex-center'>
+        <div className="flex-center key cursor-pointer" style={{backgroundColor: '#8f9396bf'}} onClick={() => handleEnterKey()}>{'ENTER'}</div>
+        {keys.slice(19).map(({key, bgColor}) => {
+          return (
+            <div className='flex-center key cursor-pointer' style={{backgroundColor: bgColor}} onClick={() => handleKeyPress(key)} key={key}>{key}</div>
+          )
+        })}
+        <div className="flex-center key cursor-pointer" style={{backgroundColor: '#8f9396bf'}} onClick={() => handleBackspaceKey()}>
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" data-testid="icon-backspace"><path fill="var(--color-tone-1)" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z"></path></svg>
+        </div>
+      </div>
     </div>
-    </>
+    </div>
   )
 }
 
