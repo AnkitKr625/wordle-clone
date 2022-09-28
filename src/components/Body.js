@@ -38,7 +38,7 @@ const KEYS =[
 ]
 
 function Body() {
-  const wordOftheDay = 'APPLE';
+  const wordOftheDay = useRef('');
   const[wordArray, setWordArray] = useState([]);
   const[word, setWord] = useState('');
   const wordRef = useRef('');
@@ -46,14 +46,21 @@ function Body() {
   const [foundWordArr, setFoundWordArr] = useState([]);
   const [keys, setKeys] = useState(KEYS);
   const [found, setFound] = useState(false);
+  const [wordList, setWordList] = useState([]);
+  const wordListRef = useRef([]);
 
-  function handleEnterKey() {
+  const handleEnterKey = () => {
     let cw = wordRef.current;
     let cwa = wordArrayRef.current;
+    let list = wordListRef.current;
     if(cw.length === 5) {
-      if(cwa.length < 6) {
-        setWordArray([...cwa, cw]);
-        setWord('');
+      if(list.some((e) => e.toUpperCase() === cw)) {
+        if(cwa.length < 6) {
+          setWordArray([...cwa, cw]);
+          setWord('');
+        }
+      } else {
+        alert('Word not in the list')
       }
     }
   }
@@ -97,8 +104,9 @@ function Body() {
     if(newWord) {
       let fndArr = [false, false, false, false, false];
       let newFndArr = [false, false, false, false, false];
+      let woftd = wordOftheDay.current;
       for(let i=0;i<5;++i){
-        if(wordOftheDay.charAt(i) === newWord.charAt(i)) {
+        if(woftd.charAt(i) === newWord.charAt(i)) {
           fndArr[i] = true;
           newFndArr[i] = true;
         }
@@ -108,10 +116,10 @@ function Body() {
       }
       let colorArr = new Array(5);
       colorArr.fill(COLORS.WRONG);
-      for(const i in wordOftheDay) {
+      for(const i in woftd) {
         if(!fndArr[i]) {
           for(const j in newWord) {
-            if(!newFndArr[j] && wordOftheDay.charAt(i) === newWord.charAt(j)) {
+            if(!newFndArr[j] && woftd.charAt(i) === newWord.charAt(j)) {
               colorArr[j] = COLORS.PARTIAL_CORRECT;
               newFndArr[j] = true;
               break;
@@ -151,7 +159,30 @@ function Body() {
     }
   },[found,handleKeyDown]);
 
+  useEffect(() => {
+    wordListRef.current = [...wordList];
+    let index = Math.floor(Math.random() * wordList.length-1);
+    wordOftheDay.current = wordList[index]?.toUpperCase();
+  },[wordList])
 
+  useEffect(() => {
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': 'b85170ef61msh3b96032521eea98p1f3c00jsna455f8dcb6a1',
+        'X-RapidAPI-Host': 'random-words5.p.rapidapi.com'
+      }
+    };
+    
+    fetch('https://random-words5.p.rapidapi.com/getMultipleRandom?count=20&wordLength=5', options)
+      .then(response => response.json())
+      .then(response => {
+        setWordList(prev => {
+          return [...response,...prev];
+        })
+      })
+      .catch(err => console.error(err));
+  },[])
 
   return (
     <div className='body'>
