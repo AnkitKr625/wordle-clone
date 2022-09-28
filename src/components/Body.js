@@ -1,4 +1,7 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
+import { Dialog, DialogTitle, Typography }from '@mui/material';
+import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
+
 import WordInput from './WordInput';
 
 const COLORS = {
@@ -48,6 +51,7 @@ function Body() {
   const [found, setFound] = useState(false);
   const [wordList, setWordList] = useState([]);
   const wordListRef = useRef([]);
+  const [showDialog, setShowDialog] = useState(false);
 
   const handleEnterKey = () => {
     let cw = wordRef.current;
@@ -60,7 +64,7 @@ function Body() {
           setWord('');
         }
       } else {
-        alert('Word not in the list')
+        setShowDialog(true);
       }
     }
   }
@@ -166,6 +170,14 @@ function Body() {
   },[wordList])
 
   useEffect(() => {
+    if(showDialog) {
+      setTimeout(() => {
+        setShowDialog(false);
+      }, 2000);
+    }
+  },[showDialog]);
+
+  useEffect(() => {
     const options = {
       method: 'GET',
       headers: {
@@ -220,6 +232,14 @@ function Body() {
         </div>
       </div>
     </div>
+      <Dialog
+        open={showDialog}
+      >
+        <DialogTitle className='flex-center justify-content-between'>
+          <ErrorOutlineOutlinedIcon />
+          <Typography component='span' variant='h6'>Word not in the list</Typography>
+        </DialogTitle>
+      </Dialog>
     </div>
   )
 }
