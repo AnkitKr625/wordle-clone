@@ -16,10 +16,12 @@ function Header({ setTheme }) {
     <div className={theme ? 'dark-header flex-center' : 'header flex-center'}>
       <div className='flex-center justify-content-between'
         style={{ width: '100%', margin: '4px', padding: '4px' }}>
-        <ThemeSwitch
-          checked={theme}
-          onChange={setTheme}
-        />
+          {true ? '' :
+            <ThemeSwitch
+              checked={theme}
+              onChange={setTheme}
+            />
+          }
         <h1>Wordle</h1>
         <IconButton aria-label="delete" color='info' size='large' onClick={handleHelpDialog}>
           <HelpIcon />
